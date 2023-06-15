@@ -15,7 +15,7 @@ int main(int argc, char const* argv[]) {
     // creating socket
     char buffer[1024] = { 0 };
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\n redis-cli: Socket creation error \n");
+        perror("\n redis-cli: Socket creation error \n");
         return -1;
     }
 
@@ -24,7 +24,7 @@ int main(int argc, char const* argv[]) {
 
     // Convert IPv4 and IPv6 addresses from text to binary
     if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
-        printf(
+        perror(
             "\nInvalid address/ Address not supported \n");
         return -1;
     }
@@ -32,7 +32,7 @@ int main(int argc, char const* argv[]) {
     // Connecting to socket
     if ((status = connect(client_fd, (struct sockaddr*)&serv_addr,
                    sizeof(serv_addr))) < 0) {
-        printf("\nConnection Failed \n");
+        perror("\nConnection Failed \n");
         return -1;
     }
 
@@ -45,22 +45,23 @@ int main(int argc, char const* argv[]) {
         std::getline(std::cin, input);
 
         string cmd = split_string(input)[0];
-        transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
+        cmd = str_toupper(cmd);
+        
+        int sentBytes; 
+        if ((sentBytes = send(client_fd, input.c_str(), input.size(), 0)) < 0) {
+            perror("\nError while sending data to server\n");
+            continue;
+        }
 
         if(cmd == "EXIT" || cmd == "QUIT" || cmd == "Q") {
             break;
         }
-        
-        int sentBytes; 
-        if (sentBytes = send(client_fd, input.c_str(), input.size(), 0) < 0) {
-            printf("\nError while sending data to server\n");
-            continue;
-        }
 
         valread = read(client_fd, buffer, 1024);
-        printf("%s\n", buffer);
+        printf("\n<%s\n", buffer);
     }
 
+    close(client_fd);
     return 0;
 
 }
