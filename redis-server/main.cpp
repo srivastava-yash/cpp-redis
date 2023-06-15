@@ -4,9 +4,23 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <iostream>
+#include <fcntl.h>
 //#include "../utils/string_utility.h"
 using namespace std;
 #define PORT 6378
+#define FDMAX 1024
+
+
+void make_socket_non_blocking(int sockfd) {
+  int flags = fcntl(sockfd, F_GETFL, 0);
+  if (flags == -1) {
+    perror("fcntl F_GETFL");
+  }
+
+  if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+    perror("fcntl F_SETFL O_NONBLOCK");
+  }
+}
 
 
 int main(int argc, char const* argv[]) {
@@ -24,6 +38,9 @@ int main(int argc, char const* argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // The select() manpage warns that select() can return a read notification for
+    // a socket that isn't actually readable. Thus using blocking I/O isn't safe
+    make_socket_non_blocking(server_fd);
   
     // Forcefully attaching socket to the port 6378
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
@@ -50,20 +67,48 @@ int main(int argc, char const* argv[]) {
 
     cout<<"Server started on port:"<<" "<<PORT<<endl;
 
-    while(true) {
-        new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
-        if(new_socket < 0) {
-        perror("error in acceptng connection");
-        exit(EXIT_FAILURE);
-        }
+    // Create a set of file descriptors to monitor.
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(server_fd, &readfds);
+    //int fdset_max = server_fd;
 
-        valread = read(new_socket, buffer, 1024);
-        printf("\n%s\n", buffer);
+    while(true) {
+        // select() modifies the fd_sets passed to it, so we have to pass in copies.
+        fd_set currentfds = readfds;
+
+        // Call select() to wait for activity on any of the monitored file descriptors.
+        int nready = select(FDMAX, &currentfds, NULL, NULL, NULL);
+        if (nready < 0) {
+        perror("error in select socket");
+        }
+        for(int i=0;i<FDMAX;i++) {   // need to optimise this loop
+            if (FD_ISSET(i, &currentfds)) {
+                int new_socket;
+                // case: new connection
+                if(i == server_fd) {
+                    new_socket = accept(i, (struct sockaddr*)&address, (socklen_t*)&addrlen);
+                    if(new_socket < 0) {
+                        perror("error in acceptng connection");
+                        exit(EXIT_FAILURE);
+                    }
+                    make_socket_non_blocking(new_socket);
+                    FD_SET(new_socket, &readfds);
+                } else {
+                    new_socket = i;
+                }
+                
+                valread = read(new_socket, buffer, 1024);
+                printf("\n%s\n", buffer);
+                
+                send(new_socket, "received", strlen("received"), 0);
+                //FD_CLR(new_socket, &readfds);
+            }
+        }
         
-        send(new_socket, "received", strlen("received"), 0);
     }
 
-    cout<<"shutdown";
+    cout<<"server shutdown";
     shutdown(server_fd, SHUT_RDWR);
     return 0;
 
