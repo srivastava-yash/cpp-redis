@@ -1,4 +1,5 @@
-#include <string_utility.h>
+#include "string_utility.h"
+using namespace std;
 
 
 /*
@@ -17,4 +18,9 @@ vector<string> split_string(string str) {
     }
 
     return strArr;
+}
+
+string str_toupper(string str) {
+    transform(str.begin(), str.end(), str.begin(), ::toupper);
+    return str;
 }

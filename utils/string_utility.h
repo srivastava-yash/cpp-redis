@@ -7,6 +7,8 @@
 #include <sstream>
 using namespace std;
 
-vector<string> split_string(string str);
+vector<string> split_string(string);
+
+string str_toupper(string);
 
 #endif
