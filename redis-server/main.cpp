@@ -6,6 +6,8 @@
 #include <iostream>
 #include <fcntl.h>
 #include "../utils/string_utility.h"
+#include "./store.h"
+#include "handle_connection.h"
 using namespace std;
 #define PORT 6378
 #define FDMAX 1024
@@ -73,6 +75,8 @@ int main(int argc, char const* argv[]) {
     FD_SET(server_fd, &readfds);
     //int fdset_max = server_fd;
 
+    Store* store = init_store();
+
     while(true) {
         // select() modifies the fd_sets passed to it, so we have to pass in copies.
         fd_set currentfds = readfds;
@@ -100,8 +104,9 @@ int main(int argc, char const* argv[]) {
                 
                 valread = read(new_socket, buffer, 1024);
                 printf("\n%s\n", buffer);
+                auto response = handle_connection(buffer, store);
                 
-                send(new_socket, "received", strlen("received"), 0);
+                send(new_socket, response.first.c_str(), strlen(response.first.c_str()), 0);
                 //FD_CLR(new_socket, &readfds);
             }
         }

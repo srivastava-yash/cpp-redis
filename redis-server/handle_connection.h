@@ -5,7 +5,7 @@
 #include <stdio.h>
 using namespace std;
 
-pair<string,int> handle_connection(string);
+pair<string,int> handle_connection(string, Store*);
 
 
 #endif

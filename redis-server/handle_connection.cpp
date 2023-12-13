@@ -1,11 +1,13 @@
 #include "handle_connection.h"
 #include "../utils/string_utility.h"
 #include "cmd.h"
+#include "store.h"
 #include <algorithm>
+#include "eval.h"
 using namespace std;
 
 
-pair<string, int> handle_connection(string input) {
+pair<string, int> handle_connection(string input, Store* store) {
     vector<string> inputArr = split_string(input);
     if(inputArr.size() < 1) {
         return make_pair("Invalid Cmd", -1);
@@ -18,6 +20,12 @@ pair<string, int> handle_connection(string input) {
 
     Cmd* cmd = new Cmd(str_toupper(inputArr[0]), args);
 
-    // complete eval functions
+    if(string_compare(cmd->getCmd(), "PING") == 0) {
+        return make_pair(evalPing(cmd, store), 0);
+    } else if(string_compare(cmd->getCmd(), "GET") == 0) {
+        return make_pair(evalGet(cmd, store),0);
+    } else {
+        return make_pair("", evalSet(cmd, store));
+    }
 
 }
