@@ -11,4 +11,6 @@ vector<string> split_string(string);
 
 string str_toupper(string);
 
+int string_compare(string, string);
+
 #endif

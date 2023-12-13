@@ -24,3 +24,7 @@ string str_toupper(string str) {
     transform(str.begin(), str.end(), str.begin(), ::toupper);
     return str;
 }
+
+int string_compare(string a, string b) {
+    return a == b ? 0 : -1; 
+}
