@@ -2,10 +2,10 @@
 #define EVAL_H
 using namespace std;
 
-string evalPing(Cmd*);
+string evalPing(Cmd*, Store*);
 
-string evalGet(Cmd*);
+string evalGet(Cmd*, Store*);
 
-string evalSet(Cmd*);
+int evalSet(Cmd*, Store*);
 
 #endif
