@@ -31,7 +31,6 @@ int main(int argc, char const* argv[]) {
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = { 0 };
 
     // Creating socket file descriptor
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -98,16 +97,19 @@ int main(int argc, char const* argv[]) {
                     }
                     make_socket_non_blocking(new_socket);
                     FD_SET(new_socket, &readfds);
+                    printf("New Connection Added\n");
                 } else {
                     new_socket = i;
+                    char buffer[1024] = { 0 };
+                    valread = read(new_socket, buffer, 1024);
+                    printf("Incoming: \n%s\n", buffer);
+                    auto response = handle_connection(buffer, store);
+                    printf("Outgoing\n%s\n", response.first.c_str());
+                    send(new_socket, response.first.c_str(), strlen(response.first.c_str()), 0);
+                    //FD_CLR(new_socket, &readfds);
                 }
                 
-                valread = read(new_socket, buffer, 1024);
-                printf("\n%s\n", buffer);
-                auto response = handle_connection(buffer, store);
                 
-                send(new_socket, response.first.c_str(), strlen(response.first.c_str()), 0);
-                //FD_CLR(new_socket, &readfds);
             }
         }
         
