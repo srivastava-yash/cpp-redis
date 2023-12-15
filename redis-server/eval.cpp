@@ -1,6 +1,4 @@
 #include "eval.h"
-#include "cmd.h"
-#include "store.h"
 using namespace std;
 
 string evalPing(Cmd* cmd, Store* store) {
