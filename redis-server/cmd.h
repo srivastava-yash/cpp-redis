@@ -1,3 +1,5 @@
+#ifndef CMD_H
+#define CMD_H
 #include <string>
 using namespace std;
 
@@ -11,3 +13,5 @@ class Cmd {
         string getCmd();
         Cmd(string, vector<string>);
 };
+
+#endif
