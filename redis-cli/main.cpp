@@ -13,7 +13,6 @@ int main(int argc, char const* argv[]) {
     struct sockaddr_in serv_addr;
 
     // creating socket
-    char buffer[1024] = { 0 };
     if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("\n redis-cli: Socket creation error \n");
         return -1;
@@ -57,6 +56,7 @@ int main(int argc, char const* argv[]) {
             break;
         }
 
+        char buffer[1024] = { 0 };
         valread = read(client_fd, buffer, 1024);
         printf("\n<%s\n", buffer);
     }
