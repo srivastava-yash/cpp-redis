@@ -6,17 +6,17 @@
 using namespace std;
 
 class Store {
-    private: 
+    private:
         unordered_map<string, RedisObj*> store;
-        unordered_map<string,string> expiryObj;
-    
-    public: 
+        unordered_map<string,uint64_t> expiryObj;
+
+    public:
         RedisObj* getKeyValue(string);
-        string getKeyExpiry(string);
+        uint64_t getKeyExpiry(string);
 
         void setKey(string, RedisObj*);
-        void setExpiry(string, string);
-    
+        void setExpiry(string, int64_t);
+
 };
 
 Store* init_store();
