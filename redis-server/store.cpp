@@ -1,4 +1,5 @@
 #include "store.h"
+#include "../utils/time_utils.h"
 using namespace std;
 
 
@@ -15,9 +16,7 @@ void Store::setKey(string key, RedisObj* obj) {
 }
 
 void Store::setExpiry(string key, int64_t expDurationMs) {
-    this->expiryObj[key] = static_cast<uint64_t>(chrono::duration_cast<chrono::milliseconds>(
-                        chrono::system_clock::now().time_since_epoch()).count())
-                   + static_cast<uint64_t>(expDurationMs);
+    this->expiryObj[key] = get_current_time() + static_cast<uint64_t>(expDurationMs);
 }
 
 Store* init_store() {
